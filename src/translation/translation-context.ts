@@ -3,8 +3,6 @@ import { destinationPageNumber } from "../viewer/pdf-destination";
 
 export type TranslationDocumentContext = {
   title?: string;
-  author?: string;
-  subject?: string;
   sectionPath?: string;
   totalPages: number;
 };
@@ -51,8 +49,6 @@ export function translationContextForPage(
   const sectionPath = outlineSectionForPage(context.outline, pageNumber);
   return {
     ...(context.title ? { title: context.title } : {}),
-    ...(context.author ? { author: context.author } : {}),
-    ...(context.subject ? { subject: context.subject } : {}),
     ...(sectionPath ? { sectionPath } : {}),
     totalPages: context.totalPages,
   };
@@ -82,12 +78,8 @@ function documentMetadata(
 ): Partial<Omit<TranslationDocumentContext, "sectionPath" | "totalPages">> {
   const info = isRecord(infoValue) ? infoValue : {};
   const title = firstMeaningfulValue(info.Title, metadata.get("dc:title"));
-  const author = firstMeaningfulValue(info.Author, metadata.get("dc:creator"));
-  const subject = firstMeaningfulValue(info.Subject, metadata.get("dc:description"));
   return {
     ...(title ? { title } : {}),
-    ...(author ? { author } : {}),
-    ...(subject ? { subject } : {}),
   };
 }
 

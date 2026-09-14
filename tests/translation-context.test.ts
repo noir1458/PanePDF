@@ -26,8 +26,15 @@ describe("translation document context", () => {
       numPages: 300,
       getMetadata: () =>
         Promise.resolve({
-          info: { Title: "  Operating   Systems  ", Author: "A. Author" },
-          metadata: { get: () => undefined },
+          info: {
+            Title: "  Operating   Systems  ",
+            Author: "A. Author",
+            Subject: "Private draft notes",
+          },
+          metadata: {
+            get: (name: string) =>
+              ({ "dc:creator": "Another Author", "dc:description": "Another subject" })[name],
+          },
         }),
       getOutline: () =>
         Promise.resolve([
@@ -44,7 +51,6 @@ describe("translation document context", () => {
 
     expect(context).toEqual({
       title: "Operating Systems",
-      author: "A. Author",
       sectionPath: "Memory > Virtual Memory",
       totalPages: 300,
     });

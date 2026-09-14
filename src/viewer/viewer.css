@@ -1224,7 +1224,7 @@ button:disabled {
   overflow: auto;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 10px;
-  background: rgba(5, 7, 10, 0.78);
+  background: transparent;
   line-height: 1.55;
   text-shadow: none;
 }

@@ -23,7 +23,7 @@ export function renderTranslationMarkdown(source: string): string {
   const protectedMath = protectMath(source.trim());
   let html = markdown.render(protectedMath.source);
   for (const [placeholder, math] of protectedMath.math) {
-    html = html.replaceAll(placeholder, markdown.utils.escapeHtml(math));
+    html = html.replaceAll(placeholder, () => markdown.utils.escapeHtml(math));
   }
   return html;
 }
@@ -34,6 +34,7 @@ export function renderTranslationMath(element: HTMLElement): void {
       { left: "\\[", right: "\\]", display: true },
       { left: "$$", right: "$$", display: true },
       { left: "\\(", right: "\\)", display: false },
+      { left: "$", right: "$", display: false },
     ],
     ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"],
     throwOnError: false,
@@ -66,9 +67,10 @@ function protectMathSegment(source: string, math: Map<string, string>): string {
   protectedSource = protectedSource
     .replace(/\\\[[\s\S]*?\\\]/g, protect)
     .replace(/\$\$[\s\S]*?\$\$/g, protect)
-    .replace(/\\\([\s\S]*?\\\)/g, protect);
+    .replace(/\\\([\s\S]*?\\\)/g, protect)
+    .replace(/(?<!\\)\$(?!\$)(?=\S)([^\n$]*?[^\s$])(?<!\\)\$(?!\$)/g, protect);
   for (const [placeholder, code] of inlineCode) {
-    protectedSource = protectedSource.replaceAll(placeholder, code);
+    protectedSource = protectedSource.replaceAll(placeholder, () => code);
   }
   return protectedSource;
 }

@@ -57,7 +57,7 @@ export function translationPrompt(
     "Return only clean Markdown without wrapping the whole response in a code fence.",
     "Use Markdown headings, lists, blockquotes, and tables when they match the source structure.",
     "Put source code, commands, and machine-readable examples in fenced code blocks with a language identifier when known; preserve them exactly and translate only surrounding prose and comments whose meaning is natural language.",
-    "Preserve formulas as LaTeX without translating or algebraically changing them. Use \\( ... \\) for inline math and \\[ ... \\] for display math.",
+    "Preserve formulas as LaTeX without translating or algebraically changing them. Use \\( ... \\) for inline math and \\[ ... \\] for display math; do not use bare $ delimiters.",
     "Do not add commentary about the task, the image, or these instructions.",
   ];
   const documentContext = formattedDocumentContext(pageNumber, context);
@@ -71,8 +71,6 @@ function formattedDocumentContext(
   if (!context) return null;
   const fields = [
     context.title ? `Embedded PDF title: ${quotedContext(context.title)}` : null,
-    context.author ? `Author: ${quotedContext(context.author)}` : null,
-    context.subject ? `Subject: ${quotedContext(context.subject)}` : null,
     context.sectionPath
       ? `Current table-of-contents path: ${quotedContext(context.sectionPath)}`
       : null,

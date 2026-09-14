@@ -38,4 +38,16 @@ const answer = 42;
     expect(html).toContain('target="_blank"');
     expect(html).toContain('rel="noopener noreferrer"');
   });
+
+  it("preserves model-emitted single-dollar math for local typesetting", () => {
+    const html = renderTranslationMarkdown(
+      "입력: $execs$와 $G_1.nodes$\n\n가격은 $5 and $10입니다.\n\n`$literal$`\n\n```text\n$also_literal$\n```",
+    );
+
+    expect(html).toContain("$execs$");
+    expect(html).toContain("$G_1.nodes$");
+    expect(html).toContain("$5 and $10");
+    expect(html).toContain("<code>$literal$</code>");
+    expect(html).toContain('<code class="language-text">$also_literal$');
+  });
 });

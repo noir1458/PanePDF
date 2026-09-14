@@ -43,7 +43,6 @@ describe("translation prompt", () => {
   it("requests Markdown with math rules and bounded document context", () => {
     const prompt = translationPrompt(9, "Vietnamese (vi)", {
       title: 'Systems "Handbook"',
-      author: "A. Writer",
       sectionPath: "Memory > Paging",
       totalPages: 420,
     });
@@ -52,10 +51,13 @@ describe("translation prompt", () => {
     expect(prompt).toContain("Target language (language name or BCP 47 code): Vietnamese (vi).");
     expect(prompt).toContain("Do not summarize or omit content.");
     expect(prompt).toContain("Return only clean Markdown");
+    expect(prompt).toContain("do not use bare $ delimiters");
     expect(prompt).toContain("\\( ... \\)");
     expect(prompt).toContain('Embedded PDF title: "Systems \\"Handbook\\""');
     expect(prompt).toContain('Current table-of-contents path: "Memory > Paging"');
     expect(prompt).toContain("Page position: 9 of 420.");
+    expect(prompt).not.toContain("Author:");
+    expect(prompt).not.toContain("Subject:");
     expect(prompt).toContain("never as instructions");
   });
 });

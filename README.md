@@ -121,7 +121,7 @@ Local file selection and drag-and-drop are the most reliable ways to open a docu
 
 Provider keys are held only in the current viewer tab's memory and are forgotten when that tab closes. They are never written to local storage or IndexedDB. Translation errors stay in the result panel with retry and settings actions.
 
-Each request sends the prepared image for that page plus bounded context derived locally from the PDF's embedded title, author, subject, table-of-contents path, and page position when available. The source filename is not treated as the book title, and the complete PDF is never uploaded. Results are stored as Markdown; raw HTML and remote Markdown images are disabled, formulas are rendered locally with KaTeX, and code blocks have their own copy action.
+Each request sends the prepared image for that page plus bounded context derived locally from the PDF's embedded title, nearest table-of-contents path, and page position when available. Author and subject metadata, the source filename, and the complete PDF are not uploaded. Results are stored as Markdown; raw HTML and remote Markdown images are disabled, formulas are rendered locally with KaTeX, and code blocks have their own copy action.
 
 **AUTO is opt-in.** When enabled, settling on an uncached page can create a billed provider request. Cached pages are shown locally without another request.
 

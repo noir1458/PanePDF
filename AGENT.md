@@ -30,7 +30,7 @@ Entering `2-11` validates the inclusive range, copies original page objects 2 th
 
 ### Flow C — Current page/spread → target-language translation
 
-Opening the right translation panel does not make a request. The user selects Gemini or OpenAI plus one of that provider's configured models, sets a target using an editable language-name/BCP-47 field with common datalist suggestions, enters the provider API key for the current viewer tab, and explicitly clicks **Translate page**. In single layout the viewer processes the current page; in spread layout it independently processes both cover-first visible pages in left-to-right order. Each request uses the same locally cropped/resampled PNG pipeline as clipboard copy and adds the available embedded PDF title/author/subject, nearest current outline breadcrumb, and current/total page position as quoted reference data. It asks for Markdown with fenced code and explicit LaTeX delimiters, displays a safe locally rendered result with KaTeX formulas and code-copy actions, and keeps one latest translation per PDF fingerprint and page. A later translation with different settings replaces it. An opt-in session-only AUTO control repeats that workflow after page/spread navigation only for visible destinations without cached results that remain selected for a 650 ms debounce.
+Opening the right translation panel does not make a request. The user selects Gemini or OpenAI plus one of that provider's configured models, sets a target using an editable language-name/BCP-47 field with common datalist suggestions, enters the provider API key for the current viewer tab, and explicitly clicks **Translate page**. In single layout the viewer processes the current page; in spread layout it independently processes both cover-first visible pages in left-to-right order. Each request uses the same locally cropped/resampled PNG pipeline as clipboard copy and adds only the available embedded PDF title, nearest current outline breadcrumb, and current/total page position as quoted reference data; author and subject metadata are omitted. It asks for Markdown with fenced code and explicit LaTeX delimiters, displays a safe locally rendered result with KaTeX formulas and code-copy actions, and keeps one latest translation per PDF fingerprint and page. A later translation with different settings replaces it. An opt-in session-only AUTO control repeats that workflow after page/spread navigation only for visible destinations without cached results that remain selected for a 650 ms debounce.
 
 ## 4. Explicit Non-goals
 
@@ -323,7 +323,7 @@ Unit tests cover:
 - saved-document title derivation
 - saved-document view defaults, validation, and legacy-record compatibility
 - Gemini GenerateContent and OpenAI Responses text/usage extraction plus one-latest-result-per-document-page cache separation
-- bounded PDF metadata/outline context selection plus Markdown safety, math-delimiter preservation, and export formatting
+- bounded PDF metadata/outline context selection plus Markdown safety, standard and model-fallback math-delimiter preservation, and export formatting
 - reading-key classification and overlap-preserving viewport offsets
 - focus-mode F/Escape shortcut classification and modifier preservation
 - PDF extraction using an in-memory generated fixture and output page-count/page-size checks
@@ -425,7 +425,7 @@ npm run check
 - [x] Added AI-free current-page Content Fit using cached neutral-margin detection and safe full-page fallback
 - [x] Stabilized page-turn Fit sizing across viewer/window resize changes
 - [x] Renamed the public product identity to PanePDF and prepared an English product README with real viewer screenshots
-- [x] Added full-width translation, safe Markdown and local KaTeX rendering, per-code-block copy, Markdown export, and bounded embedded PDF/outline context
+- [x] Added full-width translation, safe Markdown and local KaTeX rendering (including single-dollar model fallback), border-only fenced code blocks, per-code-block copy, Markdown export, and bounded embedded PDF/outline context
 
 ### In progress
 
@@ -766,3 +766,19 @@ npm run check
 **Reason:** Technical pages need readable formulas, tables, and copyable source code, while title and current-section context improve terminology without uploading the complete document. PDF filenames are frequently download IDs or scan names and can mislead the model.
 
 **Consequences:** Existing cached plain text remains valid Markdown-compatible content and needs no database migration. KaTeX fonts and the Markdown parser increase the viewer bundle size, formulas that fail parsing fall back visibly, and outline/metadata absence simply omits that context. Markdown, equation overflow, code copying, Full width, provider payloads, and metadata accuracy require manual unpacked-Chrome verification.
+
+### 2026-09-14 — Tolerate model-emitted single-dollar math
+
+**Decision:** Continue requesting explicit `\\( ... \\)` and `\\[ ... \\]` LaTeX delimiters, but also protect and locally typeset paired single-dollar inline math outside inline and fenced code. Render fenced code with its existing border and spacing but no additional dark background layer.
+
+**Reason:** Vision models may return conventional `$...$` despite the requested delimiter format, especially when transcribing symbol-heavy pseudocode. Without pre-Markdown protection, underscores and other Markdown syntax inside those expressions can be consumed before KaTeX sees them.
+
+**Consequences:** Existing cached translations containing `$...$` render without retranslation, while dollar text inside code remains literal. Truly paired prose currency may be interpreted as math, so the prompt still explicitly disallows bare-dollar delimiters and manual Chrome verification should include formulas, currency, pseudocode, and transparent code blocks over varied PDF pages.
+
+### 2026-09-15 — Minimize translation document metadata
+
+**Decision:** Limit the document context sent with each page image to the embedded PDF title, the nearest current table-of-contents path, and current/total page position. Do not extract author or subject metadata into the translation context or include those fields in Gemini/OpenAI prompts.
+
+**Reason:** Title and section location provide most of the terminology and disambiguation benefit for technical translation. Author and subject metadata add little page-level value and can contain unnecessary identifying or draft information.
+
+**Consequences:** Both providers receive a smaller common prompt, and PDFs without a title or outline send only page position alongside the translation instructions and image. PDF.js still reads the document's metadata object locally to obtain its title, but author and subject values are not selected for or added to the network request.
