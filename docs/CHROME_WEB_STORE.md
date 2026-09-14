@@ -91,7 +91,7 @@ For the first review, choose **Unlisted** visibility and deferred publishing. Al
 
 ## Required assets
 
-- 128×128 PNG icon: `public/icons/icon-128.png`
+- 128×128 PNG icon with 16px transparent padding: `public/icons/icon-store-128.png`
 - 440×280 small promotional tile: `docs/store-assets/small-promo.png`
 - At least one actual 1280×800 or 640×400 screenshot: capture from the release build without AI alteration
 - Optional 1400×560 marquee tile
