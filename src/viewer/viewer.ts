@@ -8,7 +8,12 @@ import {
   translationMarkdownFilename,
 } from "../shared/filename";
 import { isExtensionMessage } from "../shared/messages";
-import { classifyPdfUrl, sourceUrlFromLocation } from "../shared/source";
+import {
+  classifyPdfUrl,
+  hasPdfUrlAccess,
+  requestPdfUrlAccess,
+  sourceUrlFromLocation,
+} from "../shared/source";
 import type { PageRange } from "../shared/range";
 import type { PageSlot, PdfSource, ZoomMode } from "../shared/types";
 import { TranslationCache, type CachedPageTranslation } from "../translation/translation-cache";
@@ -547,10 +552,18 @@ async function openFile(file: File): Promise<void> {
   });
 }
 
-async function openUrl(value: string): Promise<void> {
+async function openUrl(value: string, requestAccess = true): Promise<void> {
   await runLoad(async () => {
     const source = classifyPdfUrl(value);
     urlInput.value = source.url;
+    const granted = requestAccess
+      ? await requestPdfUrlAccess(source.url)
+      : await hasPdfUrlAccess(source.url);
+    if (!granted) {
+      throw new UserFacingError(
+        "PanePDF needs access to this PDF's site. Open the URL form and try again to grant access.",
+      );
+    }
     const bytes = await loadPdfUrl(source);
     await openBytes(bytes, source);
   });
@@ -1899,6 +1912,6 @@ function requireElement<T extends Element>(selector: string): T {
 const initialUrl = sourceUrlFromLocation(window.location.search);
 if (initialUrl) {
   urlInput.value = initialUrl;
-  void openUrl(initialUrl);
+  void openUrl(initialUrl, false);
 }
 void refreshDocumentLibrary().catch(() => undefined);

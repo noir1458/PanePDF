@@ -36,3 +36,20 @@ export function looksLikePdfUrl(value: string): boolean {
     return false;
   }
 }
+
+export function pdfUrlPermissionOrigin(value: string): string {
+  const url = new URL(value);
+  if (url.protocol === "file:") return "file:///*";
+  if (url.protocol === "http:" || url.protocol === "https:") {
+    return `${url.protocol}//${url.hostname}/*`;
+  }
+  throw new UserFacingError("Only http, https, and file PDF URLs are supported.");
+}
+
+export function requestPdfUrlAccess(value: string): Promise<boolean> {
+  return chrome.permissions.request({ origins: [pdfUrlPermissionOrigin(value)] });
+}
+
+export function hasPdfUrlAccess(value: string): Promise<boolean> {
+  return chrome.permissions.contains({ origins: [pdfUrlPermissionOrigin(value)] });
+}

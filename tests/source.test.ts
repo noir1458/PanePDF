@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { classifyPdfUrl, looksLikePdfUrl, sourceUrlFromLocation } from "../src/shared/source";
+import {
+  classifyPdfUrl,
+  looksLikePdfUrl,
+  pdfUrlPermissionOrigin,
+  sourceUrlFromLocation,
+} from "../src/shared/source";
 
 describe("PDF source helpers", () => {
   it("classifies remote and local URLs", () => {
@@ -16,5 +21,13 @@ describe("PDF source helpers", () => {
     expect(sourceUrlFromLocation("?url=https%3A%2F%2Fexample.com%2Fa.pdf")).toBe(
       "https://example.com/a.pdf",
     );
+  });
+
+  it("requests only the PDF URL's origin at runtime", () => {
+    expect(pdfUrlPermissionOrigin("https://docs.example.com:8443/a.pdf")).toBe(
+      "https://docs.example.com/*",
+    );
+    expect(pdfUrlPermissionOrigin("http://localhost:4173/a.pdf")).toBe("http://localhost/*");
+    expect(pdfUrlPermissionOrigin("file:///Users/me/a.pdf")).toBe("file:///*");
   });
 });

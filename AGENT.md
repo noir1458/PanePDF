@@ -116,11 +116,11 @@ Gemini and OpenAI requests use the browser `fetch` API rather than bundling SDKs
 ## 8. Chrome Permission Policy
 
 - `activeTab`: read the current tab URL only after the user clicks the extension or invokes a command.
-- `tabs`: inspect the active tab, open extension viewer tabs, and target the active viewer for commands.
+- `tabs` permission is not required: opening tabs and messaging the extension-owned active viewer use non-sensitive Tabs API capabilities, while `activeTab` exposes the user-invoked tab URL.
 - `downloads`: save generated PDFs and clipboard-fallback PNGs with predictable filenames.
 - `commands`: expose the current-page copy keyboard command.
 - `clipboardWrite`: allow PNG clipboard writes after asynchronous PDF rendering from the focused extension page.
-- Host permissions `http://*/*`, `https://*/*`, and `file:///*`: fetch user-selected/open PDF URLs in the extension viewer. This is broad because PDFs may be hosted anywhere; it is not used for background collection or navigation interception.
+- Required host permissions are limited to the Gemini and OpenAI API origins used for optional translation. Broad `http://*/*`, `https://*/*`, and `file:///*` patterns are optional and grant only the specific user-selected PDF host at runtime before the extension viewer fetches it.
 
 No `storage`, `offscreen`, or `<all_urls>` content script is needed in the MVP. The README explains permissions and the `file://` toggle. The extension-page CSP includes `'wasm-unsafe-eval'` because current PDF.js ships local WASM decoders; it does not permit remote code or general string evaluation.
 
@@ -782,3 +782,11 @@ npm run check
 **Reason:** Title and section location provide most of the terminology and disambiguation benefit for technical translation. Author and subject metadata add little page-level value and can contain unnecessary identifying or draft information.
 
 **Consequences:** Both providers receive a smaller common prompt, and PDFs without a title or outline send only page position alongside the translation instructions and image. PDF.js still reads the document's metadata object locally to obtain its title, but author and subject values are not selected for or added to the network request.
+
+### 2026-09-15 — Prepare a minimum-permission store submission
+
+**Decision:** Remove the unnecessary `tabs` and `commands` permission entries, retain `commands` only as a manifest feature declaration, restrict required host access to the two AI API origins, and request optional access only for the specific remote PDF host chosen by the user. Publish a repository privacy policy, store-listing copy, permission justifications, reviewer instructions, and a deterministic promo tile based on the existing vector brand.
+
+**Reason:** Chrome Web Store review requires narrow permissions, consistent data disclosures, a public privacy policy for locally handled user data, and clear listing assets. PanePDF does not need sensitive all-tab metadata access or permanent access to every PDF host at install time.
+
+**Consequences:** Opening a remote PDF may show a one-time Chrome permission prompt for that host, while local picker/drop workflows are unchanged. Direct AI requests retain only their provider-specific required host access. Runtime permission behavior and the exact release package must pass the manual Chrome matrix before public review submission.

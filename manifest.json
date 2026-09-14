@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "PanePDF",
   "version": "0.1.0",
-  "description": "Read, copy, extract, and optionally translate PDF pages.",
+  "description": "A local-first PDF reader for focused reading, clean capture, range extraction, and optional AI translation.",
   "minimum_chrome_version": "120",
   "icons": {
     "16": "icons/icon-16.png",
@@ -24,8 +24,9 @@
     "service_worker": "service-worker.js",
     "type": "module"
   },
-  "permissions": ["activeTab", "tabs", "downloads", "commands", "clipboardWrite"],
-  "host_permissions": ["http://*/*", "https://*/*", "file:///*"],
+  "permissions": ["activeTab", "downloads", "clipboardWrite"],
+  "host_permissions": ["https://generativelanguage.googleapis.com/*", "https://api.openai.com/*"],
+  "optional_host_permissions": ["http://*/*", "https://*/*", "file:///*"],
   "commands": {
     "copy-current-page": {
       "suggested_key": {

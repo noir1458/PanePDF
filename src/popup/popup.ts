@@ -1,4 +1,4 @@
-import { looksLikePdfUrl, viewerUrl } from "../shared/source";
+import { looksLikePdfUrl, requestPdfUrlAccess, viewerUrl } from "../shared/source";
 
 const status = requireElement<HTMLElement>("#status");
 const openCurrent = requireElement<HTMLButtonElement>("#open-current");
@@ -12,14 +12,17 @@ async function initialize(): Promise<void> {
     status.textContent = "Open the PDF from this tab in the private reader.";
     openCurrent.disabled = false;
   } else {
-    status.textContent = "This tab does not expose a direct PDF URL. Open the reader and choose a file.";
+    status.textContent =
+      "This tab does not expose a direct PDF URL. Open the reader and choose a file.";
     openCurrent.disabled = true;
   }
 }
 
 openCurrent.addEventListener("click", () => {
-  if (!activePdfUrl) return;
-  void chrome.tabs.create({ url: viewerUrl(activePdfUrl) }).then(() => window.close());
+  void openCurrentPdf().catch((error: unknown) => {
+    status.textContent =
+      error instanceof Error ? error.message : "Could not request access to this PDF's site.";
+  });
 });
 
 openReader.addEventListener("click", () => {
@@ -33,7 +36,19 @@ function requireElement<T extends Element>(selector: string): T {
   return element;
 }
 
+async function openCurrentPdf(): Promise<void> {
+  if (!activePdfUrl) return;
+  const granted = await requestPdfUrlAccess(activePdfUrl);
+  if (!granted) {
+    status.textContent = "PanePDF needs access to this PDF's site before it can open the file.";
+    return;
+  }
+  await chrome.tabs.create({ url: viewerUrl(activePdfUrl) });
+  window.close();
+}
+
 void initialize().catch((error: unknown) => {
-  status.textContent = error instanceof Error ? error.message : "Could not inspect the current tab.";
+  status.textContent =
+    error instanceof Error ? error.message : "Could not inspect the current tab.";
   openCurrent.disabled = true;
 });

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="280" viewBox="0 0 440 280" role="img" aria-label="PanePDF promotional tile">
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#111816"/>
+      <stop offset="1" stop-color="#22312c"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#07100d" flood-opacity=".55"/>
+    </filter>
+  </defs>
+  <rect width="440" height="280" rx="28" fill="url(#background)"/>
+  <circle cx="378" cy="42" r="112" fill="#70d6b1" opacity=".08"/>
+  <circle cx="45" cy="258" r="98" fill="#70d6b1" opacity=".06"/>
+  <g opacity=".28" fill="none" stroke="#70d6b1" stroke-width="3">
+    <rect x="42" y="52" width="126" height="176" rx="12"/>
+    <rect x="272" y="52" width="126" height="176" rx="12"/>
+  </g>
+  <g transform="translate(156 76)" filter="url(#shadow)">
+    <rect width="128" height="128" rx="27" fill="#18201e"/>
+    <path d="M31 14h47l21 21v79H31z" fill="#f7faf9" stroke="#0b2a22" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M78 14v21h21" fill="#70d6b1" stroke="#0b2a22" stroke-width="5" stroke-linejoin="round"/>
+    <rect x="20" y="58" width="88" height="38" rx="10" fill="#70d6b1" stroke="#0b2a22" stroke-width="5"/>
+    <path fill="#09281f" fill-rule="evenodd" d="M29 68h12c8 0 13 4 13 10s-5 10-13 10h-5v7h-7zm7 6v8h5c4 0 6-1 6-4s-2-4-6-4zm21-6h11c11 0 17 5 17 13.5S79 95 68 95H57zm7 6v15h4c6 0 9-2.5 9-7.5S74 74 68 74zm24-6h18v6H95v5h10v6H95v10h-7z"/>
+  </g>
+</svg>

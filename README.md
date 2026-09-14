@@ -13,7 +13,7 @@
   <strong>Local PDF processing</strong> · <strong>Gemini & OpenAI translation</strong> · <strong>No analytics</strong>
 </p>
 
-> **Project status:** Active development. PanePDF is currently installed as an unpacked Chrome extension.
+> **Project status:** Active development. A first Chrome Web Store submission candidate is being prepared; PanePDF can currently be installed as an unpacked extension.
 
 ## Why PanePDF
 
@@ -149,6 +149,8 @@ Shortcuts do not take over while you are typing, interacting with controls, or s
 
 ## Privacy
 
+See the full [PanePDF Privacy Policy](PRIVACY.md).
+
 | Data                               | Handling                                                       |
 | ---------------------------------- | -------------------------------------------------------------- |
 | Original PDF bytes                 | Processed in the browser and never sent to an AI provider      |
@@ -162,11 +164,11 @@ AI input is sent only after an explicit translation request or while the user-en
 
 ## Permissions
 
-- `activeTab` and `tabs`: inspect the user-invoked tab, open viewer tabs, and route commands
+- `activeTab`: inspect the current tab URL only after the user opens PanePDF
 - `downloads`: save extracted PDFs and clipboard fallback PNGs
-- `commands`: support the configurable copy-page shortcut
 - `clipboardWrite`: write a rendered page PNG to the clipboard
-- `http://*/*`, `https://*/*`, and `file:///*`: open user-selected PDF URLs and contact the selected AI provider when requested
+- Gemini and OpenAI hosts: contact only the selected AI provider when translation is requested
+- Optional `http://*/*`, `https://*/*`, and `file:///*`: request access at runtime only for a PDF site chosen by the user
 
 There are no always-on content scripts and no passive browsing collection. Direct `file://` URLs require **Allow access to file URLs** in the extension's Chrome details; the file picker and drag-and-drop do not.
 
