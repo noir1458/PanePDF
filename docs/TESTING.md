@@ -52,13 +52,15 @@ Browser APIs, extension permissions, rendering, clipboard behavior, and provider
 - [ ] Confirm typing fields, controls, selected text, and focus mode retain native keyboard behavior.
 - [ ] Confirm page changes do not create requests while AUTO is off.
 - [ ] Configure every provider/model option, follow each official key link, replace/delete keys, and test suggested plus custom target languages.
-- [ ] Translate one page with each provider and verify language output, creation metadata, and token counts.
+- [ ] Translate one page with each provider and verify language output, creation metadata, embedded document/outline context, and token counts.
+- [ ] Verify Markdown headings, lists, tables, inline/display formulas, and fenced code blocks render correctly without loading remote images or accepting raw HTML.
+- [ ] Copy an individual code block and confirm only its source text is written to the clipboard.
 - [ ] In spread mode, verify both requests run independently and results appear in page order with a divider.
 - [ ] Change provider, model, or language and confirm an existing cached page remains until explicitly retranslated.
 - [ ] Confirm retranslating replaces the page's single latest cache entry.
-- [ ] Export a partially translated PDF and confirm cached pages are ordered and gaps are omitted.
+- [ ] Export a partially translated PDF as `.md` and confirm cached pages are ordered, formulas/code remain Markdown source, and gaps are omitted.
 - [ ] Delete the current PDF's translation cache and confirm other PDFs are unaffected.
-- [ ] Cycle all opacity, panel-width, and font-size states; confirm the opaque state fully hides the PDF below it.
+- [ ] Cycle all opacity, panel-width, and font-size states; confirm Full covers the document area and the opaque state fully hides the PDF below it.
 - [ ] Enable AUTO, inspect its cost warning, move rapidly across pages, and confirm only the settled uncached page is requested after the delay.
 - [ ] Test Copy translation, Retry, Check settings, Escape, and panel close.
 - [ ] Trigger a provider failure and confirm the complete error stays in the result panel.

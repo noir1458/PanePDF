@@ -22,9 +22,9 @@ export function originalPdfFilename(source: PdfSource): string {
   return filename.toLowerCase().endsWith(".pdf") ? filename : `${filename}.pdf`;
 }
 
-export function translationTextFilename(source: PdfSource): string {
+export function translationMarkdownFilename(source: PdfSource): string {
   const pdfFilename = originalPdfFilename(source);
-  return `${pdfFilename.slice(0, -4)}-translations.txt`;
+  return `${pdfFilename.slice(0, -4)}-translations.md`;
 }
 
 function filenameFromUrl(value: string): string {

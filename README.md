@@ -73,10 +73,11 @@ PanePDF turns long PDFs into a quieter reading workspace. It replaces the browse
 - Translate one page or both pages in a visible spread
 - Choose a target language by name or BCP 47 code
 - Compare the translucent translation with the original page underneath
-- Adjust panel opacity, width, and result font size
+- Adjust panel opacity, result font size, and width up to a full document-area overlay
+- Read safe rendered Markdown with locally typeset formulas and per-code-block copy buttons
 - Optionally translate uncached pages as you navigate with **AUTO**
 - Keep one latest cached translation per document page
-- Export cached results as a page-ordered UTF-8 text file
+- Export cached results as a page-ordered UTF-8 Markdown file
 
 ## Install locally
 
@@ -120,6 +121,8 @@ Local file selection and drag-and-drop are the most reliable ways to open a docu
 
 Provider keys are held only in the current viewer tab's memory and are forgotten when that tab closes. They are never written to local storage or IndexedDB. Translation errors stay in the result panel with retry and settings actions.
 
+Each request sends the prepared image for that page plus bounded context derived locally from the PDF's embedded title, author, subject, table-of-contents path, and page position when available. The source filename is not treated as the book title, and the complete PDF is never uploaded. Results are stored as Markdown; raw HTML and remote Markdown images are disabled, formulas are rendered locally with KaTeX, and code blocks have their own copy action.
+
 **AUTO is opt-in.** When enabled, settling on an uncached page can create a billed provider request. Cached pages are shown locally without another request.
 
 > **Distribution security:** Never bundle a project-owned API key in an extension. The current flow is bring-your-own-key (BYOK). If a distributed version will use a shared credential, put provider calls behind a server-side proxy or use short-lived credentials.
@@ -146,14 +149,14 @@ Shortcuts do not take over while you are typing, interacting with controls, or s
 
 ## Privacy
 
-| Data                               | Handling                                                    |
-| ---------------------------------- | ----------------------------------------------------------- |
-| Original PDF bytes                 | Processed in the browser and never sent to an AI provider   |
-| AI input                           | Prepared image of only the requested visible page or spread |
-| AI API keys                        | Kept only in current viewer-tab memory                      |
-| Saved documents and reading state  | Stored locally in extension IndexedDB                       |
-| Translation cache and token counts | Stored locally in a separate IndexedDB cache                |
-| Analytics and telemetry            | None                                                        |
+| Data                               | Handling                                                       |
+| ---------------------------------- | -------------------------------------------------------------- |
+| Original PDF bytes                 | Processed in the browser and never sent to an AI provider      |
+| AI input                           | Requested page image plus bounded embedded PDF/outline context |
+| AI API keys                        | Kept only in current viewer-tab memory                         |
+| Saved documents and reading state  | Stored locally in extension IndexedDB                          |
+| Translation cache and token counts | Stored locally in a separate IndexedDB cache                   |
+| Analytics and telemetry            | None                                                           |
 
 AI input is sent only after an explicit translation request or while the user-enabled **AUTO** mode is active.
 

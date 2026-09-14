@@ -5,9 +5,13 @@ import {
   type TranslationProviderId,
   type TranslationProviderInfo,
 } from "../translation/translation-provider";
+import {
+  renderTranslationMarkdown,
+  renderTranslationMath,
+} from "../translation/translation-markdown";
 
 type TranslationOverlayTheme = "clear" | "balanced" | "dark" | "opaque";
-type TranslationPanelWidth = "wide" | "balanced" | "narrow";
+type TranslationPanelWidth = "wide" | "balanced" | "narrow" | "full";
 type TranslationFontSize = "small" | "balanced" | "large";
 
 export type TranslationPageResult = {
@@ -32,7 +36,12 @@ const TRANSLATION_OVERLAY_THEME_UI: Record<
   dark: { label: "Dark", indicator: "●" },
   opaque: { label: "Opaque", indicator: "■" },
 };
-const TRANSLATION_PANEL_WIDTHS: readonly TranslationPanelWidth[] = ["balanced", "wide", "narrow"];
+const TRANSLATION_PANEL_WIDTHS: readonly TranslationPanelWidth[] = [
+  "balanced",
+  "wide",
+  "full",
+  "narrow",
+];
 const TRANSLATION_PANEL_WIDTH_UI: Record<
   TranslationPanelWidth,
   { label: string; indicator: string; cssWidth: string }
@@ -40,6 +49,7 @@ const TRANSLATION_PANEL_WIDTH_UI: Record<
   wide: { label: "Wide", indicator: "↔", cssWidth: "700px" },
   balanced: { label: "Default", indicator: "↔", cssWidth: "460px" },
   narrow: { label: "Narrow", indicator: "↔", cssWidth: "340px" },
+  full: { label: "Full", indicator: "⇔", cssWidth: "100vw" },
 };
 const TRANSLATION_FONT_SIZES: readonly TranslationFontSize[] = ["balanced", "large", "small"];
 const TRANSLATION_FONT_SIZE_UI: Record<TranslationFontSize, { label: string; indicator: string }> =
@@ -658,7 +668,10 @@ export class TranslationPanel {
         text.classList.add("is-status");
         text.textContent = "Reading the page image and translating…";
       } else if (translation) {
-        text.textContent = translation.text;
+        text.classList.add("is-markdown");
+        text.innerHTML = renderTranslationMarkdown(translation.text);
+        renderTranslationMath(text);
+        this.#addCodeCopyButtons(text);
       } else if (this.#requestErrors.has(pageNumber)) {
         text.classList.add("is-status");
         text.textContent = "Translation failed.";
@@ -670,6 +683,33 @@ export class TranslationPanel {
       nodes.push(section);
     }
     this.#output.replaceChildren(...nodes);
+  }
+
+  #addCodeCopyButtons(root: HTMLElement): void {
+    for (const code of root.querySelectorAll<HTMLElement>("pre > code")) {
+      const pre = code.parentElement;
+      if (!pre) continue;
+      const button = this.#root.ownerDocument.createElement("button");
+      button.className = "translation-code-copy";
+      button.type = "button";
+      button.textContent = "Copy";
+      button.setAttribute("aria-label", "Copy code block");
+      button.addEventListener("click", () => void this.#copyCodeBlock(code, button));
+      pre.append(button);
+    }
+  }
+
+  async #copyCodeBlock(code: HTMLElement, button: HTMLButtonElement): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(code.textContent);
+      button.textContent = "Copied";
+      window.setTimeout(() => {
+        if (button.isConnected) button.textContent = "Copy";
+      }, 1_400);
+    } catch (error) {
+      button.textContent = "Copy failed";
+      button.title = errorMessage(error);
+    }
   }
 
   #resultSummary(pageNumber: number, translation: CachedPageTranslation): string {

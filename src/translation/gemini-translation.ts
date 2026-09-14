@@ -7,6 +7,7 @@ import {
   type TranslationProvider,
   type TranslationUsage,
 } from "./translation-provider";
+import type { TranslationDocumentContext } from "./translation-context";
 
 export const GEMINI_TRANSLATION_MODEL = "gemini-3.8-flash";
 export const GEMINI_TRANSLATION_MODELS = [
@@ -31,6 +32,7 @@ export async function translatePageImage(
   pageNumber: number,
   targetLanguage: string,
   signal?: AbortSignal,
+  context?: TranslationDocumentContext,
 ): Promise<PageTranslation> {
   const imageData = await blobToBase64(image);
   const response = await fetch(
@@ -46,7 +48,7 @@ export async function translatePageImage(
           {
             role: "user",
             parts: [
-              { text: translationPrompt(pageNumber, targetLanguage) },
+              { text: translationPrompt(pageNumber, targetLanguage, context) },
               {
                 inline_data: {
                   mime_type: image.type || "image/png",

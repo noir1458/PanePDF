@@ -19,7 +19,7 @@ function translation(pageNumber: number, text: string): CachedPageTranslation {
 describe("translation text export", () => {
   it("sorts cached pages and omits gaps", () => {
     expect(formatTranslationExport([translation(7, "일곱"), translation(2, "둘")])).toBe(
-      "Page 2\n\n둘\n\n──────────\n\nPage 7\n\n일곱\n",
+      "## Page 2\n\n둘\n\n---\n\n## Page 7\n\n일곱\n",
     );
   });
 

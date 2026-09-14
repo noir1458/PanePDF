@@ -7,6 +7,7 @@ import {
   type TranslationProvider,
   type TranslationUsage,
 } from "./translation-provider";
+import type { TranslationDocumentContext } from "./translation-context";
 
 export const OPENAI_TRANSLATION_MODEL = "gpt-5.6-luna";
 export const OPENAI_TRANSLATION_MODELS = [
@@ -30,6 +31,7 @@ export async function translatePageImage(
   pageNumber: number,
   targetLanguage: string,
   signal?: AbortSignal,
+  context?: TranslationDocumentContext,
 ): Promise<PageTranslation> {
   const imageUrl = await blobToDataUrl(image);
   const response = await fetch("https://api.openai.com/v1/responses", {
@@ -49,7 +51,7 @@ export async function translatePageImage(
           content: [
             {
               type: "input_text",
-              text: translationPrompt(pageNumber, targetLanguage),
+              text: translationPrompt(pageNumber, targetLanguage, context),
             },
             {
               type: "input_image",

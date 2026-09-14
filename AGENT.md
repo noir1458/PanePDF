@@ -8,7 +8,7 @@ PanePDF reduces the repeated friction involved in reading and translating pages 
 
 `PDF reading → local page preparation → clipboard/file or explicit page/spread translation`
 
-It locally renders a current PDF page to PNG or copies original PDF page objects into a smaller PDF. An optional translation panel sends only prepared images of the current page or visible spread to the selected Gemini or OpenAI API through a manual action or explicitly enabled AUTO mode and stores each returned page translation locally.
+It locally renders a current PDF page to PNG or copies original PDF page objects into a smaller PDF. An optional translation panel sends prepared images of the current page or visible spread plus bounded context derived from embedded PDF metadata, outline destinations, and page position to the selected Gemini or OpenAI API through a manual action or explicitly enabled AUTO mode and stores each returned page translation locally as Markdown.
 
 ## 2. Primary User
 
@@ -30,7 +30,7 @@ Entering `2-11` validates the inclusive range, copies original page objects 2 th
 
 ### Flow C — Current page/spread → target-language translation
 
-Opening the right translation panel does not make a request. The user selects Gemini or OpenAI plus one of that provider's configured models, sets a target using an editable language-name/BCP-47 field with common datalist suggestions, enters the provider API key for the current viewer tab, and explicitly clicks **Translate page**. In single layout the viewer processes the current page; in spread layout it independently processes both cover-first visible pages in left-to-right order. Each request uses the same locally cropped/resampled PNG pipeline as clipboard copy, sends one page image with a shared English translation instruction naming the target language, displays page-specific provenance and text separated by a divider, and keeps one latest translation per PDF fingerprint and page. A later translation with different settings replaces it. An opt-in session-only AUTO control repeats that workflow after page/spread navigation only for visible destinations without cached results that remain selected for a 650 ms debounce.
+Opening the right translation panel does not make a request. The user selects Gemini or OpenAI plus one of that provider's configured models, sets a target using an editable language-name/BCP-47 field with common datalist suggestions, enters the provider API key for the current viewer tab, and explicitly clicks **Translate page**. In single layout the viewer processes the current page; in spread layout it independently processes both cover-first visible pages in left-to-right order. Each request uses the same locally cropped/resampled PNG pipeline as clipboard copy and adds the available embedded PDF title/author/subject, nearest current outline breadcrumb, and current/total page position as quoted reference data. It asks for Markdown with fenced code and explicit LaTeX delimiters, displays a safe locally rendered result with KaTeX formulas and code-copy actions, and keeps one latest translation per PDF fingerprint and page. A later translation with different settings replaces it. An opt-in session-only AUTO control repeats that workflow after page/spread navigation only for visible destinations without cached results that remain selected for a 650 ms debounce.
 
 ## 4. Explicit Non-goals
 
@@ -45,7 +45,7 @@ Initial versions do not include:
 - Chrome native PDF viewer DOM manipulation as a core mechanism
 - Unnecessary UI frameworks or state managers
 
-All PDF parsing, rendering, cropping, and extraction are local in the browser. Only prepared images of the manually requested or AUTO-selected current page/spread leave the device for translation.
+All PDF parsing, rendering, cropping, extraction, metadata reading, and outline resolution are local in the browser. Only prepared images of the manually requested or AUTO-selected current page/spread plus the bounded embedded metadata/outline/page-position context leave the device for translation. The full PDF and source filename are not sent.
 
 ## 5. Chrome PDF Viewer Constraint
 
@@ -86,7 +86,7 @@ panepdf/
 │   ├── clipboard/clipboard.ts
 │   ├── popup/{popup.html,popup.ts,popup.css}
 │   ├── shared/{constants,errors,filename,messages,range,source,types}.ts
-│   ├── translation/{translation-provider,translation-providers,gemini-translation,openai-translation,translation-cache}.ts
+│   ├── translation/{translation-provider,translation-providers,translation-context,translation-markdown,gemini-translation,openai-translation,translation-cache}.ts
 │   ├── ui/{document-toolbar,focus-mode,keyboard-shortcuts-popover,range-popover,reading-theme-picker,toolbar-overflow,toast,translation-panel,url-popover}.ts
 │   └── viewer/
 │       ├── viewer.html
@@ -111,7 +111,7 @@ panepdf/
 
 Responsibilities stay separated: loading/session state, visible rendering, page tracking, export rendering, extraction, clipboard, Chrome messaging, and UI components must not collapse into one large module.
 
-Gemini and OpenAI requests use the browser `fetch` API rather than bundling SDKs. A small provider contract isolates configured models, official key-page URLs, and request/response parsing; the translation panel owns provider/model/target-language selection, provider-specific session keys, opacity, width, font-size, and AUTO state plus file-level cache actions; the cache owns persisted translation records; the viewer coordinates those modules with the active document.
+Gemini and OpenAI requests use the browser `fetch` API rather than bundling SDKs. A small provider contract isolates configured models, official key-page URLs, and request/response parsing; a document-context module reads bounded embedded metadata and resolves outline destinations locally; a Markdown module disables raw HTML and remote images before local KaTeX typesetting; the translation panel owns provider/model/target-language selection, provider-specific session keys, opacity, width, font-size, and AUTO state plus file-level cache actions; the cache owns persisted raw Markdown records; the viewer coordinates those modules with the active document.
 
 ## 8. Chrome Permission Policy
 
@@ -126,7 +126,7 @@ No `storage`, `offscreen`, or `<all_urls>` content script is needed in the MVP. 
 
 ## 9. Security / Privacy
 
-- PDF bytes remain local. Only prepared images of the visible page/spread are sent separately to the selected Gemini or OpenAI API after a manual Translate action or through explicitly enabled AUTO mode.
+- PDF bytes remain local. Only prepared images of the visible page/spread plus bounded embedded metadata, outline path, and page position are sent separately to the selected Gemini or OpenAI API after a manual Translate action or through explicitly enabled AUTO mode. The source filename is not treated as or sent as a book title.
 - No analytics or telemetry. API keys are never committed, logged, or persisted; the translation panel retains separate Gemini and OpenAI keys only in the current tab's JavaScript memory.
 - No PDF text or byte dumps in logs.
 - OpenAI translation requests set `store: false`; returned Gemini/OpenAI text is stored only in extension-local IndexedDB for page reuse.
@@ -216,7 +216,7 @@ The top bar keeps its opening actions on the left and one compact page-control g
 - Previous/next view buttons traverse explicit page jumps from thumbnails, outline entries, bookmarks, search results, PDF links, the page field, and Home/End. Continuous scrolling does not flood the history; the actual page visible when the reader next jumps replaces that departure point. Opening another PDF clears the history.
 - Focus mode requests browser fullscreen and hides the complete top toolbar, sidebar, and translation panel while retaining their underlying open state for restoration. F or Escape exits; failure to obtain browser fullscreen leaves the in-page distraction-free mode active with a toast explanation.
 - Page flow toggles between the existing continuous stack and a persisted page-turn presentation. Paged flow reveals only the active page in single layout or the active cover-first pair in spread layout, centers short pages safely, retains scrolling for oversized/zoomed pages, and shows translucent edge turn buttons. Returning to continuous flow unhides the existing slots without recreating the document.
-- AI opens a result-first right overlay without narrowing the PDF viewport. Its main surface contains each cached result's page/provider/model/language/token provenance followed by the translation; a spread renders the left page first, a divider, then the right page. Persistent page-labelled errors and a compact bottom row contain Translate, AUTO, four-state opacity including fully opaque, three-state width and font size, Settings, and Close. T toggles the panel and Shift+T requests the visible page or spread outside typing/focus contexts. A gear popover contains provider/model selection, an editable target-language field, the provider's official API-key link, key readiness/replacement/deletion, and current-file translation export/cache deletion. Export sorts cached records by page and skips uncached pages. Opening the panel or changing settings never starts translation. AUTO is off by default and, while enabled, requests only visible pages without cached translations after a 650 ms settle delay. Manual spread translation requests both pages; independent controllers, cache keys, and result slots prevent cross-page overwrites, while copy joins both translations with page labels and a divider.
+- AI opens a result-first right overlay without narrowing the PDF viewport. Its main surface contains each cached result's page/provider/model/language/token provenance followed by safe rendered Markdown; local KaTeX formats explicit math delimiters, tables and code scroll horizontally, each fenced code block has a copy action, and raw HTML/remote Markdown images stay disabled. A spread renders the left page first, a divider, then the right page. Persistent page-labelled errors and a compact bottom row contain Translate, AUTO, four-state opacity including fully opaque, four-state width including Full, three-state font size, Settings, and Close. T toggles the panel and Shift+T requests the visible page or spread outside typing/focus contexts. A gear popover contains provider/model selection, an editable target-language field, the provider's official API-key link, key readiness/replacement/deletion, and current-file Markdown export/cache deletion. Export sorts cached records by page and skips uncached pages. Opening the panel or changing settings never starts translation. AUTO is off by default and, while enabled, requests only visible pages without cached translations after a 650 ms settle delay. Manual spread translation requests both pages; independent controllers, cache keys, and result slots prevent cross-page overwrites, while whole-result copy retains raw Markdown and joins both translations with page labels and a divider.
 - More closes after direct actions, Escape, or an outside pointer action. Theme and search remain nested interactive popovers; shortcut help opens as an independent sibling panel so it remains visible after More closes. Ctrl/Command+F opens More before focusing search so the keyboard path remains visible and usable.
 - No `alert()`; use non-blocking accessible live-region toasts.
 
@@ -323,11 +323,12 @@ Unit tests cover:
 - saved-document title derivation
 - saved-document view defaults, validation, and legacy-record compatibility
 - Gemini GenerateContent and OpenAI Responses text/usage extraction plus one-latest-result-per-document-page cache separation
+- bounded PDF metadata/outline context selection plus Markdown safety, math-delimiter preservation, and export formatting
 - reading-key classification and overlap-preserving viewport offsets
 - focus-mode F/Escape shortcut classification and modifier preservation
 - PDF extraction using an in-memory generated fixture and output page-count/page-size checks
 
-Manual Chrome matrix covers public URL, local picker/drop, one/10+/100+ pages, landscape/mixed sizes, invalid/encrypted PDF, clipboard PNG, Gemini/OpenAI provider/model/target-language switching, latest-result replacement and provenance, bottom opacity/width/font controls, T/Shift+T shortcuts, current-file text export and cache deletion, opt-in cache-aware AUTO translation and its cost warning, official key links, session-key clearing, worker CSP, URL/file access, commands, and memory behavior.
+Manual Chrome matrix covers public URL, local picker/drop, one/10+/100+ pages, landscape/mixed sizes, invalid/encrypted PDF, clipboard PNG, Gemini/OpenAI provider/model/target-language switching, latest-result replacement and provenance, bounded metadata/outline request context, safe Markdown/KaTeX/code-copy rendering, bottom opacity/full-width/font controls, T/Shift+T shortcuts, current-file Markdown export and cache deletion, opt-in cache-aware AUTO translation and its cost warning, official key links, session-key clearing, worker CSP, URL/file access, commands, and memory behavior.
 
 ## 26. Build / Verification Commands
 
@@ -396,7 +397,7 @@ npm run check
 - [x] README installation, usage, privacy, limitations, troubleshooting, and manual test runbook
 - [x] Removed unreliable GPT Send integration, its scripting permission, and its keyboard command
 - [x] Range popover close button, Escape close, and outside-click dismissal
-- [x] Automated typecheck, lint, 108 unit/integration tests, production build, and distribution manifest/asset validation
+- [x] Automated typecheck, lint, 114 unit/integration tests, production build, and distribution manifest/asset validation
 - [x] Fixed CSS `[hidden]` handling after live Chrome testing showed empty/drop overlays covering rendered pages
 - [x] Serialized per-page canvas rendering across document switches and zoom changes
 - [x] Consolidated navigation/page actions into one ordered control group and moved URL input into an on-demand popover
@@ -424,6 +425,7 @@ npm run check
 - [x] Added AI-free current-page Content Fit using cached neutral-margin detection and safe full-page fallback
 - [x] Stabilized page-turn Fit sizing across viewer/window resize changes
 - [x] Renamed the public product identity to PanePDF and prepared an English product README with real viewer screenshots
+- [x] Added full-width translation, safe Markdown and local KaTeX rendering, per-code-block copy, Markdown export, and bounded embedded PDF/outline context
 
 ### In progress
 
@@ -756,3 +758,11 @@ npm run check
 **Reason:** A spread is read as one visual unit, so a single-number indicator and single-sheet translation disagree with what is visibly on screen. Keeping API requests and caches page-scoped preserves existing payload size, replacement, retry, and safety behavior without requiring one model response to segment two images reliably.
 
 **Consequences:** The page field becomes a text input so it can display `16, 17`; navigation still accepts a leading page number. IMG, PDF-range defaults, bookmarks, and other single-page actions retain the tracker-selected sheet, while AI translates the whole visible pair. Two uncached pages can produce two simultaneous provider requests and corresponding token charges; partial success remains visible and retry targets failed pages only.
+
+### 2026-09-14 — Render structured translations with bounded document context
+
+**Decision:** Request clean Markdown with fenced code and explicit LaTeX delimiters, retain that source string in the existing page cache, render it with raw HTML and remote images disabled, typeset math locally with bundled KaTeX, and add a copy action to each code block. Add a Full state to the overlay width cycle and export cached pages as `.md`. For every requested page, locally read the embedded PDF title/author/subject and resolve the nearest deepest outline breadcrumb, then send only those bounded values plus page position as quoted reference data; never infer the book title from or send the source filename.
+
+**Reason:** Technical pages need readable formulas, tables, and copyable source code, while title and current-section context improve terminology without uploading the complete document. PDF filenames are frequently download IDs or scan names and can mislead the model.
+
+**Consequences:** Existing cached plain text remains valid Markdown-compatible content and needs no database migration. KaTeX fonts and the Markdown parser increase the viewer bundle size, formulas that fail parsing fall back visibly, and outline/metadata absence simply omits that context. Markdown, equation overflow, code copying, Full width, provider payloads, and metadata accuracy require manual unpacked-Chrome verification.

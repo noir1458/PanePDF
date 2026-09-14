@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   originalPdfFilename,
   rangeFilename,
-  translationTextFilename,
+  translationMarkdownFilename,
 } from "../src/shared/filename";
 
 describe("rangeFilename", () => {
@@ -40,13 +40,13 @@ describe("originalPdfFilename", () => {
   });
 });
 
-describe("translationTextFilename", () => {
+describe("translationMarkdownFilename", () => {
   it("uses the sanitized PDF basename", () => {
-    expect(translationTextFilename({ kind: "local-file", name: "My Book.pdf" })).toBe(
-      "My Book-translations.txt",
+    expect(translationMarkdownFilename({ kind: "local-file", name: "My Book.pdf" })).toBe(
+      "My Book-translations.md",
     );
-    expect(translationTextFilename({ kind: "local-file", name: "unsafe:name" })).toBe(
-      "unsafe_name-translations.txt",
+    expect(translationMarkdownFilename({ kind: "local-file", name: "unsafe:name" })).toBe(
+      "unsafe_name-translations.md",
     );
   });
 });

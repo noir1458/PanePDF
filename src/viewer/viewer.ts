@@ -5,7 +5,7 @@ import {
   originalPdfFilename,
   pageImageFilename,
   rangeFilename,
-  translationTextFilename,
+  translationMarkdownFilename,
 } from "../shared/filename";
 import { isExtensionMessage } from "../shared/messages";
 import { classifyPdfUrl, sourceUrlFromLocation } from "../shared/source";
@@ -14,6 +14,11 @@ import type { PageSlot, PdfSource, ZoomMode } from "../shared/types";
 import { TranslationCache, type CachedPageTranslation } from "../translation/translation-cache";
 import { formatTranslationExport } from "../translation/translation-export";
 import type { TranslationProviderId } from "../translation/translation-provider";
+import {
+  loadTranslationDocumentContext,
+  translationContextForPage,
+  type TranslationDocumentContextIndex,
+} from "../translation/translation-context";
 import {
   DEFAULT_TRANSLATION_PROVIDER_ID,
   TRANSLATION_PROVIDER_INFO,
@@ -146,6 +151,7 @@ let renderer: PageRenderer | null = null;
 let renderObserver: IntersectionObserver | null = null;
 let dragDepth = 0;
 let activeDocumentId: string | null = null;
+let translationContextPromise: Promise<TranslationDocumentContextIndex> | null = null;
 let positionSaveTimer = 0;
 const translationRequestControllers = new Map<number, AbortController>();
 let topbarCollapseTimer = 0;
@@ -581,6 +587,7 @@ async function openBytes(
   updatePageHistoryButtons();
   flushReadingPosition();
   activeDocumentId = null;
+  translationContextPromise = null;
   const previousRenderer = renderer;
   renderer = null;
   previousRenderer?.dispose();
@@ -602,6 +609,7 @@ async function openBytes(
   pageStack.replaceChildren();
 
   const pdfDocument = await session.load(bytes, source);
+  translationContextPromise = loadTranslationDocumentContext(pdfDocument);
   documentSearch = new PdfDocumentSearch(pdfDocument);
   const libraryId = options.savedMetadata?.id ?? documentLibraryId(pdfDocument, source);
   let savedMetadata = options.savedMetadata;
@@ -1715,9 +1723,13 @@ async function requestPageTranslation(
   const provider = translationProvider(providerId);
   translationModel(provider, modelId);
   try {
-    const pageImage = await renderPagePng(pdfDocument, pageNumber, {
-      rotation: session.snapshot.rotation,
-    });
+    const contextPromise = translationContextPromise;
+    const [pageImage, contextIndex] = await Promise.all([
+      renderPagePng(pdfDocument, pageNumber, {
+        rotation: session.snapshot.rotation,
+      }),
+      contextPromise,
+    ]);
     const result = await provider.translatePageImage(
       modelId,
       apiKey,
@@ -1725,6 +1737,7 @@ async function requestPageTranslation(
       pageNumber,
       targetLanguage,
       controller.signal,
+      contextIndex ? translationContextForPage(contextIndex, pageNumber) : undefined,
     );
     return await translationCache.put(
       documentId,
@@ -1755,8 +1768,8 @@ async function exportDocumentTranslations(): Promise<number> {
   const text = formatTranslationExport(translations);
   if (!text) throw new UserFacingError("There are no saved translations to export.");
   await downloadBlob(
-    new Blob(["\uFEFF", text], { type: "text/plain;charset=utf-8" }),
-    translationTextFilename(source),
+    new Blob(["\uFEFF", text], { type: "text/markdown;charset=utf-8" }),
+    translationMarkdownFilename(source),
   );
   return translations.length;
 }
