@@ -426,6 +426,7 @@ npm run check
 - [x] Stabilized page-turn Fit sizing across viewer/window resize changes
 - [x] Renamed the public product identity to PanePDF and prepared an English product README with real viewer screenshots
 - [x] Added full-width translation, safe Markdown and local KaTeX rendering (including single-dollar model fallback), border-only fenced code blocks, per-code-block copy, Markdown export, and bounded embedded PDF/outline context
+- [x] Prepared Chrome Web Store listing/privacy copy, minimum-permission manifest, icon, promo tile, four exact-size screenshots, and a credential-scanned release ZIP
 
 ### In progress
 
@@ -435,7 +436,7 @@ npm run check
 
 1. Reload `dist/` unpacked and complete the README manual verification checklist, including the PanePDF branding, auto-hide interaction, crop safety, and an API translation request with a low-limit test key.
 2. Fix any Chrome-runtime issues found in viewer chrome, worker loading, clipboard, adaptive cropping, Gemini/OpenAI requests and switching, file URLs, or shortcut dispatch.
-3. Prepare Chrome Web Store copy, privacy disclosures, screenshots, and the final extension package without embedding provider credentials.
+3. Upload the prepared package and listing assets as an unlisted deferred-publishing draft, then submit only after the manual Chrome matrix passes.
 
 ### Blockers
 

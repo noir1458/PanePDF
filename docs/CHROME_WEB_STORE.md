@@ -94,10 +94,14 @@ For the first review, choose **Unlisted** visibility and deferred publishing. Al
 
 - 128×128 PNG icon with 16px transparent padding: `public/icons/icon-store-128.png`
 - 440×280 small promotional tile: `docs/store-assets/small-promo.png`
-- At least one actual 1280×800 or 640×400 screenshot: capture from the release build without AI alteration
+- 1280×800 screenshots cropped and resized from actual PanePDF captures without generated content:
+  - `docs/store-assets/screenshot-1-two-page-translation.png`
+  - `docs/store-assets/screenshot-2-ai-overlay.png`
+  - `docs/store-assets/screenshot-3-reading-controls.png`
+  - `docs/store-assets/screenshot-4-document-sidebar.png`
 - Optional 1400×560 marquee tile
 
-Do not submit the existing README screenshots directly: their dimensions do not match Chrome Web Store screenshot requirements. Capture fresh full-bleed screenshots from a 1280×800 Chrome content viewport.
+The source README captures had non-store aspect ratios. These four derivatives preserve their pixels and UI content, use a 16:10 crop around the relevant feature, and resize to the required 1280×800 dimensions. Inspect them once more against the release build before uploading.
 
 ## Final manual gates
 
