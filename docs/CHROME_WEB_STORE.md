@@ -83,6 +83,7 @@ Certifications and answers:
 3. Select **IMG** to copy the current page and **PDF** to extract a page range.
 4. Open the left edge to verify thumbnails, outline, saved documents, and bookmarks.
 5. Open **AI** to inspect translation settings. Translation is an optional bring-your-own-key feature; no developer-owned test credential is embedded or provided.
+   The settings disclosure lists the exact page image and limited context sent to the selected provider before the first translation.
 6. To test remote URLs, use **Open URL** and approve the runtime prompt for that PDF host.
 
 ## Distribution recommendation

@@ -790,3 +790,5 @@ npm run check
 **Reason:** Chrome Web Store review requires narrow permissions, consistent data disclosures, a public privacy policy for locally handled user data, and clear listing assets. PanePDF does not need sensitive all-tab metadata access or permanent access to every PDF host at install time.
 
 **Consequences:** Opening a remote PDF may show a one-time Chrome permission prompt for that host, while local picker/drop workflows are unchanged. Direct AI requests retain only their provider-specific required host access. Runtime permission behavior and the exact release package must pass the manual Chrome matrix before public review submission.
+
+**Disclosure:** The translation settings must name the page image, target language, optional embedded title and nearest outline path, page position, and instructions sent directly to the selected provider, and must state that the complete PDF and source filename are not sent.

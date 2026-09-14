@@ -743,7 +743,8 @@ export class TranslationPanel {
     this.#keyInput.placeholder = provider.apiKeyPlaceholder;
     this.#keyDescription.textContent =
       `The key stays only in this viewer tab's memory and is never saved. ` +
-      `When you translate, the visible page image and translation instructions are sent to ${provider.displayName}.`;
+      `When you translate, the visible page image, target language, embedded PDF title and nearest table-of-contents path when available, page position, and translation instructions are sent to ${provider.displayName}. ` +
+      `The complete PDF and source filename are not sent.`;
   }
 
   #renderThemeButton(): void {
